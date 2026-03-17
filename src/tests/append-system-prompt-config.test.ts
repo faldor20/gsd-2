@@ -61,3 +61,27 @@ test("DefaultResourceLoader still falls back to the legacy agent APPEND_SYSTEM.m
 		rmSync(root, { recursive: true, force: true });
 	}
 });
+
+test("DefaultResourceLoader prefers the global config root APPEND_SYSTEM.md over the legacy agent path", async () => {
+	const { root, projectDir, configDir, agentDir } = createLoaderPaths();
+
+	try {
+		writeFileSync(join(configDir, "APPEND_SYSTEM.md"), "Preferred config root prompt.");
+		writeFileSync(join(agentDir, "APPEND_SYSTEM.md"), "Legacy agent prompt.");
+
+		const loader = new DefaultResourceLoader({
+			cwd: projectDir,
+			agentDir,
+			noExtensions: true,
+			noSkills: true,
+			noPromptTemplates: true,
+			noThemes: true,
+		});
+
+		await loader.reload();
+
+		assert.deepEqual(loader.getAppendSystemPrompt(), ["Preferred config root prompt."]);
+	} finally {
+		rmSync(root, { recursive: true, force: true });
+	}
+});
