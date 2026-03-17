@@ -124,7 +124,7 @@ Guidelines are assembled dynamically based on which tools are active:
 
 ## Section 2: Append System Prompt
 
-If `.gsd/APPEND_SYSTEM.md` (project) or `~/.gsd/agent/APPEND_SYSTEM.md` (global) exists, its contents are appended after the base prompt.
+If `.gsd/APPEND_SYSTEM.md` (project), `~/.gsd/APPEND_SYSTEM.md` (global, preferred), or `~/.gsd/agent/APPEND_SYSTEM.md` (legacy global location) exists, its contents are appended after the base prompt.
 
 This is the safe way to add project-wide instructions without replacing the default prompt. It works with both the default base and a custom SYSTEM.md.
 

@@ -19,7 +19,8 @@ Replace the default system prompt entirely:
 
 Append to it instead:
 - `.gsd/APPEND_SYSTEM.md` (project)
-- `~/.gsd/agent/APPEND_SYSTEM.md` (global)
+- `~/.gsd/APPEND_SYSTEM.md` (global, preferred)
+- `~/.gsd/agent/APPEND_SYSTEM.md` (legacy global location, still supported)
 
 ### File Arguments
 
