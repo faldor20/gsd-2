@@ -1,5 +1,5 @@
 const managerServerPort = Number.parseInt(
-  import.meta.env.VITE_MANAGER_SERVER_PORT ?? "3001",
+  import.meta.env.VITE_MANAGER_SERVER_PORT ?? "3000",
   10,
 );
 

@@ -25,7 +25,7 @@ Svelte frontend + Elysia backend for the GSD web app.
 
    This starts two processes:
    - Vite dev server on `http://localhost:3000` (browser goes here, HMR enabled)
-   - Elysia API server on `http://localhost:3001` (API routes only)
+   - Elysia API server on `http://localhost:3000` (API routes only)
 
    Vite proxies every `/api/*` request to the Elysia process, so the browser always uses a single origin (`localhost:3000`).
 
@@ -85,7 +85,7 @@ bun run preview
 That starts:
 
 - Vite Preview on `http://0.0.0.0:4173/`
-- Elysia on `http://0.0.0.0:3001/`
+- Elysia on `http://0.0.0.0:3000/`
 
 The browser client points its API and WebSocket traffic at the backend port,
 so opening the preview URL still exercises the live manager process.
@@ -94,9 +94,9 @@ To test the production server directly:
 
 ```bash
 bun run server
-curl -i http://localhost:3001/
-curl http://localhost:3001/api/message
-curl -N http://localhost:3001/api/events
+curl -i http://localhost:3000/
+curl http://localhost:3000/api/message
+curl -N http://localhost:3000/api/events
 ```
 
 ## Notes

@@ -10,6 +10,7 @@
     "dev": "bun ./scripts/dev.ts",
     "build": "vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "start": "bun ./server/src/index.ts",
     "server": "bun --watch server/src/index.ts",
     "preview": "bun run build && bun ./scripts/preview.ts",
     "lint": "eslint .",

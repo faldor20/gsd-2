@@ -14,7 +14,7 @@ const serverEntry = fileURLToPath(new URL("server/src/index.ts", packageRoot));
 const server = Bun.spawn(
   [process.execPath, "run", serverEntry],
   {
-    env: { ...process.env, HOST: process.env["HOST"] ?? "0.0.0.0", PORT: process.env["PORT"] ?? "3001" },
+    env: { ...process.env, HOST: process.env["HOST"] ?? "0.0.0.0", PORT: process.env["PORT"] ?? "3000" },
     stdout: "inherit",
     stderr: "inherit",
     

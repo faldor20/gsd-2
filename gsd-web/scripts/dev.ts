@@ -1,5 +1,5 @@
 /**
- * Development launcher: starts the Elysia API server (port 3001) and the Vite
+ * Development launcher: starts the Elysia API server (port 3000) and the Vite
  * dev server (port 3000) concurrently. The browser visits http://localhost:3000/;
  * Vite proxies all /api/* requests to the Elysia process.
  */
@@ -15,7 +15,7 @@ const viteEntry = fileURLToPath(
 const api = Bun.spawn(
   [process.execPath, "run", "--watch", serverEntry],
   {
-    env: { ...process.env, PORT: "3001" },
+    env: { ...process.env, PORT: "3000" },
     stdout: "inherit",
     stderr: "inherit",
   },

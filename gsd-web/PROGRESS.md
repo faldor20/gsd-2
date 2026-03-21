@@ -82,7 +82,7 @@ Earlier verification for the initial slice covered:
 
 - Manager UI dev flow: `npm run dev` from `gsd-web/`
 - Local instance attach flow:
-  - `gsd web attach --manager ws://localhost:3001/ws/instance`
+  - `gsd web attach --manager ws://localhost:3000/ws/instance`
 
 ## Known gaps before this follow-up
 

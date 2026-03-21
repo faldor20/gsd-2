@@ -26,15 +26,28 @@
         let
           pkgs     = nixpkgs.legacyPackages.${system};
           mcporter = llm-agents.packages.${system}.mcporter;
-        in
-        {
-          default = pkgs.callPackage ./package.nix {
+          cliPackage = pkgs.callPackage ./package.nix {
             inherit mcporter;
             nodejs = pkgs.nodejs_24;
           };
-          gsd-cli = pkgs.callPackage ./package.nix {
-            inherit mcporter;
+        in
+        {
+          default = cliPackage;
+          gsd-cli = cliPackage;
+          gsd-web = pkgs.callPackage ./nix/gsd-web.nix {
             nodejs = pkgs.nodejs_24;
+            bun = pkgs.bun;
+            inherit cliPackage;
+          };
+        }
+      );
+
+      apps = forAllSystems (
+        system:
+        {
+          gsd-web = {
+            type = "app";
+            program = "${self.packages.${system}.gsd-web}/bin/gsd-web";
           };
         }
       );
