@@ -7,6 +7,11 @@
 
 import type { AgentMessage, ThinkingLevel } from "@gsd/pi-agent-core";
 import type { ImageContent, Model } from "@gsd/pi-ai";
+import type {
+	ExtensionUIInterviewQuestion,
+	ExtensionUIInterviewResult,
+	ExtensionUIQuestionOption,
+} from "../../core/extensions/types.js";
 import type { SessionStats } from "../../core/agent-session.js";
 import type { BashResult } from "../../core/bash-executor.js";
 import type { CompactionResult } from "../../core/compaction/index.js";
@@ -208,9 +213,30 @@ export type RpcResponse =
 // Extension UI Events (stdout)
 // ============================================================================
 
+export type RpcExtensionSelectOption = ExtensionUIQuestionOption;
+
 /** Emitted when an extension needs user input */
 export type RpcExtensionUIRequest =
-	| { type: "extension_ui_request"; id: string; method: "select"; title: string; options: string[]; timeout?: number; allowMultiple?: boolean }
+	| {
+			type: "extension_ui_request";
+			id: string;
+			method: "select";
+			title: string;
+			options: Array<string | RpcExtensionSelectOption>;
+			timeout?: number;
+			allowMultiple?: boolean;
+	  }
+	| {
+			type: "extension_ui_request";
+			id: string;
+			method: "interview";
+			title: string;
+			questions: ExtensionUIInterviewQuestion[];
+			progress?: string;
+			reviewHeadline?: string;
+			exitHeadline?: string;
+			exitLabel?: string;
+	  }
 	| { type: "extension_ui_request"; id: string; method: "confirm"; title: string; message: string; timeout?: number }
 	| {
 			type: "extension_ui_request";
@@ -254,6 +280,7 @@ export type RpcExtensionUIRequest =
 export type RpcExtensionUIResponse =
 	| { type: "extension_ui_response"; id: string; value: string }
 	| { type: "extension_ui_response"; id: string; values: string[] }
+	| { type: "extension_ui_response"; id: string; answers: ExtensionUIInterviewResult["answers"] }
 	| { type: "extension_ui_response"; id: string; confirmed: boolean }
 	| { type: "extension_ui_response"; id: string; cancelled: true };
 

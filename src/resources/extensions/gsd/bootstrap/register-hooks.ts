@@ -15,6 +15,7 @@ import { getAutoDashboardData, isAutoActive, isAutoPaused, markToolEnd, markTool
 import { isParallelActive, shutdownParallel } from "../parallel-orchestrator.js";
 import { saveActivityLog } from "../activity-log.js";
 import { maybeRenderGsdHeader } from "./register-shortcuts.js";
+import { cleanupDetachedWebAttachBridge } from "../commands/handlers/ops.js";
 
 export function registerHooks(pi: ExtensionAPI): void {
   pi.on("session_start", async (_event, ctx) => {
@@ -82,6 +83,7 @@ export function registerHooks(pi: ExtensionAPI): void {
   });
 
   pi.on("session_shutdown", async (_event, ctx: ExtensionContext) => {
+    cleanupDetachedWebAttachBridge();
     if (isParallelActive()) {
       try {
         await shutdownParallel(process.cwd());

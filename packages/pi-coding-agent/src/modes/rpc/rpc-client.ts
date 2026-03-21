@@ -41,11 +41,13 @@ export interface RpcClientOptions {
 export interface ModelInfo {
 	provider: string;
 	id: string;
+	name: string;
 	contextWindow: number;
 	reasoning: boolean;
 }
 
 export type RpcEventListener = (event: AgentEvent) => void;
+type FireAndForgetExtensionUiResponse = { type: "extension_ui_response"; id: string } & Record<string, unknown>;
 
 // ============================================================================
 // RPC Client
@@ -198,6 +200,17 @@ export class RpcClient {
 	 */
 	async abort(): Promise<void> {
 		await this.send({ type: "abort" });
+	}
+
+	/**
+	 * Answer a pending extension UI request.
+	 *
+	 * rpc-mode consumes `extension_ui_response` directly from stdin and does not
+	 * emit a response envelope, so this path must bypass the normal request/
+	 * response bookkeeping used for RpcCommand messages.
+	 */
+	async respondToUiRequest(response: FireAndForgetExtensionUiResponse): Promise<void> {
+		this.sendFireAndForget(response);
 	}
 
 	/**
@@ -502,6 +515,14 @@ export class RpcClient {
 
 			this.process!.stdin!.write(serializeJsonLine(fullCommand));
 		});
+	}
+
+	private sendFireAndForget(command: Record<string, unknown>): void {
+		if (!this.process?.stdin) {
+			throw new Error("Client not started");
+		}
+
+		this.process.stdin.write(serializeJsonLine(command as RpcCommand));
 	}
 
 	private getData<T>(response: RpcResponse): T {

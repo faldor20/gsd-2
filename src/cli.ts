@@ -17,6 +17,7 @@ import { ensureManagedTools } from './tool-bootstrap.js'
 import { loadStoredEnvKeys } from './wizard.js'
 import { getPiDefaultModelAndProvider, migratePiCredentials } from './pi-migration.js'
 import { shouldRunOnboarding, runOnboarding } from './onboarding.js'
+import { parseWebAttachArgList } from './web-attach-args.js'
 import chalk from 'chalk'
 import { checkForUpdates } from './update-check.js'
 import { printHelp, printSubcommandHelp } from './help-text.js'
@@ -28,6 +29,7 @@ import { markStartup, printStartupTimings } from './startup-timings.js'
 interface CliFlags {
   mode?: 'text' | 'json' | 'rpc' | 'mcp'
   print?: boolean
+  help?: boolean
   continue?: boolean
   noSession?: boolean
   worktree?: boolean | string
@@ -91,8 +93,7 @@ function parseCliArgs(argv: string[]): CliFlags {
         flags.worktree = true
       }
     } else if (arg === '--help' || arg === '-h') {
-      printHelp(process.env.GSD_VERSION || '0.0.0')
-      process.exit(0)
+      flags.help = true
     } else if (!arg.startsWith('--') && !arg.startsWith('-')) {
       flags.messages.push(arg)
     }
@@ -122,10 +123,12 @@ if (!process.stdin.isTTY && !isPrintMode && !hasSubcommand && !cliFlags.listMode
 
 // `gsd <subcommand> --help` — show subcommand-specific help
 const subcommand = cliFlags.messages[0]
-if (subcommand && process.argv.includes('--help')) {
+if (cliFlags.help) {
   if (printSubcommandHelp(subcommand, process.env.GSD_VERSION || '0.0.0')) {
     process.exit(0)
   }
+  printHelp(process.env.GSD_VERSION || '0.0.0')
+  process.exit(0)
 }
 
 // `gsd config` — replay the setup wizard and exit
@@ -205,6 +208,67 @@ if (cliFlags.messages[0] === 'headless') {
   const { runHeadless, parseHeadlessArgs } = await import('./headless.js')
   await runHeadless(parseHeadlessArgs(process.argv))
   process.exit(0)
+}
+
+// `gsd web-attach` — compatibility alias for `gsd web attach`
+if (cliFlags.messages[0] === 'web-attach') {
+  const cliPath = process.env.GSD_BIN_PATH || process.argv[1]
+  if (!cliPath) {
+    process.stderr.write('[gsd] Error: Cannot determine CLI path. Set GSD_BIN_PATH or run via gsd.\n')
+    process.exit(1)
+  }
+
+  const { runWebBridge } = await import('./web-bridge.js')
+  let attachFlags
+  try {
+    attachFlags = parseWebAttachArgList(process.argv.slice(3), 'gsd web-attach')
+  } catch (error) {
+    process.stderr.write(`[gsd] Error: ${error instanceof Error ? error.message : String(error)}\n`)
+    process.exit(1)
+  }
+
+  await runWebBridge({
+    basePath: process.cwd(),
+    cliPath,
+    managerUrl: attachFlags.managerUrl,
+    hostLabel: attachFlags.hostLabel,
+    instanceId: attachFlags.instanceId,
+  })
+  process.exit(0)
+}
+
+
+// `gsd web` — gsd-web bridge commands
+if (cliFlags.messages[0] === 'web') {
+  const cliPath = process.env.GSD_BIN_PATH || process.argv[1]
+  if (!cliPath) {
+    process.stderr.write('[gsd] Error: Cannot determine CLI path. Set GSD_BIN_PATH or run via gsd.\n')
+    process.exit(1)
+  }
+
+  // `gsd web attach` — connect this instance to a central manager via WebSocket
+  if (cliFlags.messages[1] === 'attach') {
+    const { runWebBridge } = await import('./web-bridge.js')
+    let attachFlags
+    try {
+      attachFlags = parseWebAttachArgList(process.argv.slice(4), 'gsd web attach')
+    } catch (error) {
+      process.stderr.write(`[gsd] Error: ${error instanceof Error ? error.message : String(error)}\n`)
+      process.exit(1)
+    }
+    await runWebBridge({
+      basePath: process.cwd(),
+      cliPath,
+      managerUrl: attachFlags.managerUrl,
+      hostLabel: attachFlags.hostLabel,
+      instanceId: attachFlags.instanceId,
+    })
+    process.exit(0)
+  }
+
+  process.stderr.write('[gsd] Error: Standalone `gsd web` has been removed.\n')
+  process.stderr.write('[gsd] Use the gsd-web manager and connect this project with `gsd web attach --manager <ws-url>`.\n')
+  process.exit(1)
 }
 
 // Pi's tool bootstrap can mis-detect already-installed fd/rg on some systems

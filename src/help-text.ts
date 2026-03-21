@@ -32,6 +32,39 @@ const SUBCOMMAND_HELP: Record<string, string> = {
     'Compare with --continue (-c) which always resumes the most recent session.',
   ].join('\n'),
 
+  web: [
+    'Usage: gsd web attach --manager <ws-url> [--host-label <label>]',
+    '       gsd web-attach --manager <ws-url> [--host-label <label>]',
+    '',
+    'Standalone `gsd web` has been removed.',
+    'Use the gsd-web manager and attach this project to it via WebSocket.',
+    '',
+    'Subcommands:',
+    '  attach               Connect this instance to a central manager via WebSocket.',
+    '',
+    'Options:',
+    '  --manager <ws-url>   Manager WebSocket URL, e.g. ws://host:4040/ws/instance',
+    '  --host-label <label> Human-readable label for this host (default: hostname)',
+    '  --instance-id <id>   Override the generated instance identifier',
+    '',
+    'Examples:',
+    '  gsd web attach --manager ws://localhost:3000/ws/instance',
+    '  gsd web attach --manager ws://manager.example.com:4040/ws/instance',
+    '  gsd web-attach --manager ws://manager.example.com:4040/ws/instance',
+    '  gsd web attach --manager ws://localhost:4040/ws/instance --host-label dev-laptop',
+  ].join('\n'),
+
+  'web-attach': [
+    'Usage: gsd web-attach --manager <ws-url> [--host-label <label>]',
+    '',
+    'Compatibility alias for: gsd web attach',
+    '',
+    'Connect this instance to a central gsd-web manager via WebSocket.',
+    '',
+    'Example:',
+    '  gsd web-attach --manager ws://localhost:3000/ws/instance',
+  ].join('\n'),
+
   worktree: [
     'Usage: gsd worktree <command> [args]',
     '',
@@ -84,6 +117,8 @@ const SUBCOMMAND_HELP: Record<string, string> = {
     '  status               Show progress dashboard',
     '  new-milestone        Create a milestone from a specification document',
     '  query                JSON snapshot: state + next dispatch + costs (no LLM)',
+    '  web attach           Connect this instance to a gsd-web manager via WebSocket',
+    '  web-attach           Compatibility alias for `web attach`',
     '',
     'new-milestone flags:',
     '  --context <path>     Path to spec/PRD file (use \'-\' for stdin)',
@@ -103,6 +138,8 @@ const SUBCOMMAND_HELP: Record<string, string> = {
     '  gsd headless --answers answers.json auto              With pre-supplied answers',
     '  gsd headless --events agent_end,extension_ui_request auto   Filtered event stream',
     '  gsd headless query                              Instant JSON state snapshot',
+    '  gsd headless web attach --manager ws://localhost:4040/ws/instance',
+    '  gsd headless web-attach --manager ws://localhost:4040/ws/instance',
     '',
     'Exit codes: 0 = complete, 1 = error/timeout, 2 = blocked',
   ].join('\n'),
@@ -130,7 +167,8 @@ export function printHelp(version: string): void {
   process.stdout.write('  config                   Re-run the setup wizard\n')
   process.stdout.write('  update                   Update GSD to the latest version\n')
   process.stdout.write('  sessions                 List and resume a past session\n')
-  process.stdout.write('  worktree <cmd>           Manage worktrees (list, merge, clean, remove)\n')
+  process.stdout.write('  web                      Attach this project to a gsd-web manager\n')
+  process.stdout.write('  web-attach               Compatibility alias for `gsd web attach`\n')
   process.stdout.write('  headless [cmd] [args]    Run /gsd commands without TUI (default: auto)\n')
   process.stdout.write('\nRun gsd <subcommand> --help for subcommand-specific help.\n')
 }

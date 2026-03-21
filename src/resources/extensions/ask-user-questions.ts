@@ -43,6 +43,13 @@ interface RemoteResultDetails {
 
 type AskUserQuestionsDetails = LocalResultDetails | RemoteResultDetails;
 
+type InterviewCapableUI = {
+	interview?: (
+		questions: Question[],
+		opts?: { signal?: AbortSignal },
+	) => Promise<{ answers: RoundResult["answers"] } | undefined>;
+};
+
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
 const OptionSchema = Type.Object({
@@ -142,17 +149,32 @@ export default function AskUserQuestions(pi: ExtensionAPI) {
 				return errorResult("Error: UI not available (non-interactive mode)", params.questions);
 			}
 
-			// Delegate to shared interview UI
-			const result = await showInterviewRound(params.questions, {}, ctx as any);
+			// Delegate to shared interview UI when the host supports custom views.
+			let result = await showInterviewRound(params.questions, {}, ctx as any);
 
-			// RPC mode fallback: custom() returns undefined, so showInterviewRound
-			// may return undefined. Fall back to sequential ctx.ui.select() calls.
+			// RPC/web mode can optionally provide a structured batched interview
+			// transport. Use that before falling back to one-question-at-a-time.
+			if (!result) {
+				const interviewUi = ctx.ui as typeof ctx.ui & InterviewCapableUI;
+				if (typeof interviewUi.interview === "function") {
+					const interviewResult = await interviewUi.interview(params.questions, { signal });
+					if (!interviewResult) {
+						return {
+							content: [{ type: "text", text: "ask_user_questions was cancelled before receiving a response" }],
+							details: { questions: params.questions, response: null, cancelled: true } satisfies LocalResultDetails,
+						};
+					}
+					result = { endInterview: false, answers: interviewResult.answers };
+				}
+			}
+
+			// Legacy fallback for UI surfaces that only support simple selectors.
 			if (!result) {
 				const answers: Record<string, { answers: string[] }> = {};
 				for (const q of params.questions) {
-					const options = q.options.map((o) => o.label);
+					const options = q.options.map((o) => ({ label: o.label, description: o.description })) as unknown as string[];
 					if (!q.allowMultiple) {
-						options.push(OTHER_OPTION_LABEL);
+						options.push(OTHER_OPTION_LABEL as unknown as never);
 					}
 					const selected = await ctx.ui.select(
 						`${q.header}: ${q.question}`,

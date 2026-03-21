@@ -65,7 +65,7 @@ export interface QueryResult {
 
 // ─── Implementation ─────────────────────────────────────────────────────────
 
-export async function handleQuery(basePath: string): Promise<QueryResult> {
+export async function createQuerySnapshot(basePath: string): Promise<QuerySnapshot> {
   const { deriveState, resolveDispatch, readAllSessionStatuses, loadEffectiveGSDPreferences } = await loadExtensionModules()
   const state = await deriveState(basePath)
 
@@ -108,6 +108,12 @@ export async function handleQuery(basePath: string): Promise<QueryResult> {
     next,
     cost: { workers, total: workers.reduce((sum, w) => sum + w.cost, 0) },
   }
+
+  return snapshot
+}
+
+export async function handleQuery(basePath: string): Promise<QueryResult> {
+  const snapshot = await createQuerySnapshot(basePath)
 
   process.stdout.write(JSON.stringify(snapshot) + '\n')
   return { exitCode: 0, data: snapshot }

@@ -48,6 +48,7 @@ export function showHelp(ctx: ExtensionCommandContext): void {
     "  /gsd mode           Set workflow mode (solo/team)  [global|project]",
     "  /gsd prefs          Manage preferences  [global|project|status|wizard|setup|import-claude]",
     "  /gsd cmux           Manage cmux integration  [status|on|off|notifications|sidebar|splits|browser]",
+    "  /gsd web-attach     Attach this project to a gsd-web manager  [--manager <ws-url>]",
     "  /gsd config         Set API keys for external tools",
     "  /gsd keys           API key manager  [list|add|remove|test|rotate|doctor]",
     "  /gsd hooks          Show post-unit hook configuration",

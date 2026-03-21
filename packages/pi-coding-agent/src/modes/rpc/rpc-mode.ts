@@ -14,6 +14,7 @@
 import * as crypto from "node:crypto";
 import type { AgentSession } from "../../core/agent-session.js";
 import type {
+	ExtensionUIInterviewOptions,
 	ExtensionUIContext,
 	ExtensionUIDialogOptions,
 	ExtensionWidgetOptions,
@@ -123,6 +124,9 @@ export async function runRpcMode(session: AgentSession): Promise<never> {
 			createDialogPromise(opts, undefined, { method: "select", title, options, timeout: opts?.timeout, allowMultiple: opts?.allowMultiple }, (r) =>
 				"cancelled" in r && r.cancelled ? undefined : "values" in r ? r.values : "value" in r ? r.value : undefined,
 			),
+
+		interview: (questions, opts) =>
+			createInterviewPromise(questions, opts),
 
 		confirm: (title, message, opts) =>
 			createDialogPromise(opts, false, { method: "confirm", title, message, timeout: opts?.timeout }, (r) =>
@@ -282,6 +286,23 @@ export async function runRpcMode(session: AgentSession): Promise<never> {
 			// Tool expansion not supported in RPC mode - no TUI
 		},
 	});
+
+	function createInterviewPromise(
+		questions: NonNullable<ExtensionUIContext["interview"]> extends (questions: infer T, ...args: any[]) => any ? T : never,
+		opts: ExtensionUIInterviewOptions | undefined,
+	) {
+		return createDialogPromise(opts, undefined, {
+			method: "interview",
+			title: "Questions",
+			questions,
+			progress: opts?.progress,
+			reviewHeadline: opts?.reviewHeadline,
+			exitHeadline: opts?.exitHeadline,
+			exitLabel: opts?.exitLabel,
+		}, (r) =>
+			"cancelled" in r && r.cancelled ? undefined : "answers" in r ? { answers: r.answers } : undefined,
+		);
+	}
 
 	// Set up extensions with RPC-based UI context
 	await session.bindExtensions({

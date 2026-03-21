@@ -177,6 +177,8 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
   let interrupted = false
   const startTime = Date.now()
   const isNewMilestone = options.command === 'new-milestone'
+  const isHeadlessWebAttach = options.command === 'web-attach'
+    || (options.command === 'web' && options.commandArgs[0] === 'attach')
 
   // new-milestone involves codebase investigation + artifact writing — needs more time
   if (isNewMilestone && options.timeout === 300_000) {
@@ -247,6 +249,46 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     const { handleQuery } = await import('./headless-query.js')
     const result = await handleQuery(process.cwd())
     return { exitCode: result.exitCode, interrupted: false }
+  }
+
+  if (isHeadlessWebAttach) {
+    const cliPath = process.env.GSD_BIN_PATH || process.argv[1]
+    if (!cliPath) {
+      process.stderr.write('[headless] Error: Cannot determine CLI path. Set GSD_BIN_PATH or run via gsd.\n')
+      process.exit(1)
+    }
+
+    const attachArgs = options.command === 'web-attach'
+      ? options.commandArgs
+      : options.commandArgs.slice(1)
+
+    const { runWebBridge } = await import('./web-bridge.js')
+    const { parseWebAttachArgList } = await import('./web-attach-args.js')
+    let attachFlags
+    try {
+      attachFlags = parseWebAttachArgList(
+        attachArgs,
+        options.command === 'web-attach' ? 'gsd headless web-attach' : 'gsd headless web attach',
+      )
+    } catch (error) {
+      process.stderr.write(`[headless] Error: ${error instanceof Error ? error.message : String(error)}\n`)
+      process.exit(1)
+    }
+
+    await runWebBridge({
+      basePath: process.cwd(),
+      cliPath,
+      managerUrl: attachFlags.managerUrl,
+      hostLabel: attachFlags.hostLabel,
+      instanceId: attachFlags.instanceId,
+    })
+    return { exitCode: 0, interrupted: false }
+  }
+
+  if (options.command === 'web') {
+    process.stderr.write('[headless] Error: Standalone `gsd headless web` has been removed.\n')
+    process.stderr.write('[headless] Use `gsd headless web attach --manager <ws-url>` to connect this project to gsd-web.\n')
+    return { exitCode: 1, interrupted: false }
   }
 
   // Resolve CLI path for the child process

@@ -21,6 +21,7 @@
     "gsd-cli": "dist/loader.js"
   },
   "files": [
+    "gsd-web",
     "dist",
     "packages",
     "pkg",
@@ -39,13 +40,14 @@
   },
   "packageManager": "npm@10.9.3",
   "scripts": {
+    "build:web-proto": "npm run build -w @gsd/web-protocol",
     "build:pi-tui": "npm run build -w @gsd/pi-tui",
     "build:pi-ai": "npm run build -w @gsd/pi-ai",
     "build:pi-agent-core": "npm run build -w @gsd/pi-agent-core",
     "build:pi-coding-agent": "npm run build -w @gsd/pi-coding-agent",
     "build:native-pkg": "npm run build -w @gsd/native",
     "build:pi": "npm run build:native-pkg && npm run build:pi-tui && npm run build:pi-ai && npm run build:pi-agent-core && npm run build:pi-coding-agent",
-    "build": "npm run build:pi && tsc && npm run copy-resources && npm run copy-themes && npm run copy-export-html",
+    "build": "npm run build:web-proto && npm run build:pi && tsc && npm run copy-resources && npm run copy-themes && npm run copy-export-html",
     "copy-resources": "node scripts/copy-resources.cjs",
     "copy-themes": "node scripts/copy-themes.cjs",
     "copy-export-html": "node scripts/copy-export-html.cjs",
@@ -83,6 +85,7 @@
     "test:live-regression": "node --experimental-strip-types tests/live-regression/run.ts"
   },
   "dependencies": {
+    "@gsd/web-protocol": "file:packages/gsd-web-protocol",
     "@anthropic-ai/sdk": "^0.73.0",
     "@anthropic-ai/vertex-sdk": "^0.14.4",
     "@aws-sdk/client-bedrock-runtime": "^3.983.0",
@@ -119,6 +122,7 @@
     "sql.js": "^1.14.1",
     "strip-ansi": "^7.1.0",
     "undici": "^7.24.2",
+    "ws": "^8.18.1",
     "yaml": "^2.8.2",
     "zod-to-json-schema": "^3.24.6"
   },

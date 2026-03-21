@@ -805,22 +805,19 @@ export async function loadVisualizerData(basePath: string): Promise<VisualizerDa
           state.activeSlice?.id === s.id;
 
         const tasks: VisualizerTask[] = [];
+        const planFile = resolveSliceFile(basePath, mid, s.id, 'PLAN');
+        const planContent = planFile ? readFileCached(planFile) : null;
 
-        if (isActiveSlice) {
-          const planFile = resolveSliceFile(basePath, mid, s.id, 'PLAN');
-          const planContent = planFile ? readFileCached(planFile) : null;
-
-          if (planContent) {
-            const plan = parsePlan(planContent);
-            for (const t of plan.tasks) {
-              tasks.push({
-                id: t.id,
-                title: t.title,
-                done: t.done,
-                active: state.activeTask?.id === t.id,
-                estimate: t.estimate || undefined,
-              });
-            }
+        if (planContent) {
+          const plan = parsePlan(planContent);
+          for (const t of plan.tasks) {
+            tasks.push({
+              id: t.id,
+              title: t.title,
+              done: t.done,
+              active: state.activeTask?.id === t.id,
+              estimate: t.estimate || undefined,
+            });
           }
         }
 

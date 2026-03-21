@@ -156,6 +156,7 @@ export type ShutdownHandler = () => void;
 
 const noOpUIContext: ExtensionUIContext = {
 	select: async () => undefined,
+	interview: async () => undefined,
 	confirm: async () => false,
 	input: async () => undefined,
 	notify: () => {},

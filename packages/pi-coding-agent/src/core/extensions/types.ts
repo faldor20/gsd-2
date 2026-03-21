@@ -90,6 +90,41 @@ export interface ExtensionUIDialogOptions {
 	allowMultiple?: boolean;
 }
 
+/** Shared option shape for richer extension question UIs. */
+export interface ExtensionUIQuestionOption {
+	label: string;
+	description?: string;
+}
+
+/** One question in a batched interview-style UI flow. */
+export interface ExtensionUIInterviewQuestion {
+	id: string;
+	header: string;
+	question: string;
+	options: ExtensionUIQuestionOption[];
+	allowMultiple?: boolean;
+}
+
+/** One resolved answer from a batched interview flow. */
+export interface ExtensionUIInterviewAnswer {
+	selected: string | string[];
+	notes: string;
+}
+
+/** Result returned by a batched interview flow. */
+export interface ExtensionUIInterviewResult {
+	answers: Record<string, ExtensionUIInterviewAnswer>;
+}
+
+/** Presentation options for batched interview-style questions. */
+export interface ExtensionUIInterviewOptions {
+	signal?: AbortSignal;
+	progress?: string;
+	reviewHeadline?: string;
+	exitHeadline?: string;
+	exitLabel?: string;
+}
+
 /** Placement for extension widgets. */
 export type WidgetPlacement = "aboveEditor" | "belowEditor";
 
@@ -109,6 +144,15 @@ export type TerminalInputHandler = (data: string) => { consume?: boolean; data?:
 export interface ExtensionUIContext {
 	/** Show a selector and return the user's choice. When `opts.allowMultiple` is true, returns an array. */
 	select(title: string, options: string[], opts?: ExtensionUIDialogOptions): Promise<string | string[] | undefined>;
+
+	/**
+	 * Show a batched interview flow with tabs and a final review step.
+	 * Optional because only some UI surfaces can render this richer workflow.
+	 */
+	interview?(
+		questions: ExtensionUIInterviewQuestion[],
+		opts?: ExtensionUIInterviewOptions,
+	): Promise<ExtensionUIInterviewResult | undefined>;
 
 	/** Show a confirmation dialog. */
 	confirm(title: string, message: string, opts?: ExtensionUIDialogOptions): Promise<boolean>;
